@@ -36,12 +36,12 @@ def load_osm(filename):
 
 def load_parse_osm(filename):
     root = load_osm(filename)
-    return {'bound': parse_bound(root), 'nodes': parse_node(root), 'ways': parse_way(root)}
+    return {'bound': parse_bound(root), 'nodes': parse_node(root), 'ways': parse_way(root), 'relations': parse_relation(root)}
 
 
 def load_parse_osmxy(filename):
     root = load_osm(filename)
-    return {'bound': parse_bound(root), 'nodes': parse_nodexy(root), 'ways': parse_way(root)}
+    return {'bound': parse_bound(root), 'nodes': parse_nodexy(root), 'ways': parse_way(root), 'relations': parse_relation(root)}
 
 
 def parse_bound(root):
@@ -91,3 +91,20 @@ def parse_way(root):
         ways.append((nodes, tags))
     return ways
 
+def parse_relation(root):
+    # refer to https://wiki.openstreetmap.org/wiki/Relation
+    relation_vals = ['road']
+    relations = []
+    for relation in root.findall('relation'):
+        members = []
+        for member in relation.findall('member'):
+            members.append(int(member.attrib['ref']))
+        tags = {}
+        for tag in relation.findall('tag'):
+            tags[tag.attrib['k']] = tag.attrib['v']
+        if 'route' not in tags:
+            continue
+        if tags['route'] not in relation_vals:
+            continue
+        relations.append((members, tags))
+    return relations
